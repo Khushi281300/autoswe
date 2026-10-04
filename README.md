@@ -136,11 +136,7 @@ apr_overfitting_study/
 │   ├── test_scope_checker.py             # Unit tests for ScopeChecker
 │   ├── test_behavior_checker.py          # Unit tests for BehaviorChecker
 │   └── test_composite_gate.py            # Unit tests for CompositeVerificationGate
-├── proposals/                            # Research Proposal & Academic Roadmaps
-│   └── RESEARCH_PROPOSAL_KHUSHI_SHUKLA.md # Master's research proposal
 ├── DATA_DICTIONARY.md                    # Data schema and field documentation
-├── READING_TABLE.md                      # Systematic literature review (12 papers)
-├── RESEARCH_PROJECT_PLAN.md              # Research roadmap and methodology plan
 └── README.md                             # Project overview and documentation
 ```
 
@@ -194,7 +190,7 @@ This pilot study forms the foundation of ongoing research on **oracle-free verif
 - **Phase 2 (Hybrid Gate Synthesis)**: Combining high-specificity static invariants with lightweight dynamic test execution and assertion generation.
 - **Phase 3 (Agent Repair Loop Integration)**: Deploying calibrated gates into agent execution loops (e.g., AutoSWE, Agentless) to measure their effect on benchmark resolve rate and patch reliability.
 
-For details, refer to the full [Research Proposal](file:///c:/D_Drive/projects/apr_overfitting_study/proposals/RESEARCH_PROPOSAL_KHUSHI_SHUKLA.md) and [Preliminary Pilot Results Report](file:///c:/D_Drive/projects/apr_overfitting_study/eval/PILOT_RESULTS_REPORT.md).
+For details, refer to the [Preliminary Pilot Results Report](eval/PILOT_RESULTS_REPORT.md).
 
 ---
 
@@ -208,3 +204,4 @@ For details, refer to the full [Research Proposal](file:///c:/D_Drive/projects/a
 
 ## 📄 License
 This project is licensed under the MIT License.
+
