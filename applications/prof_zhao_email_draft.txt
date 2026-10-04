@@ -7,7 +7,8 @@ I hope this email finds you well.
 
 My name is Khushi Shukla, and I am writing to express my strong interest in applying as a research student (Kenkyusei) / Master's degree student in your Software Engineering Laboratory at Kyushu University for the upcoming admissions cycle.
 
-I have followed your research on automated program repair and search space analysis with great interest, particularly your GECCO 2024 paper on exploring patch spaces for program repair. My current research focuses on automated program repair in autonomous software engineering agents, specifically investigating whether oracle-free static checks can mitigate test overfitting and behavioral divergence on SWE-bench Verified.
+I have followed your research on automated program repair, software testing, and specification-guided repair with great interest, particularly your GECCO 2024 paper on repairing neural network controllers under system-level specifications. My current research focuses on automated program repair in autonomous software engineering agents, specifically investigating whether oracle-free static checks can mitigate test overfitting and behavioral divergence on SWE-bench Verified.
+
 
 Recent work by Wang, Pradel, and Liu (ICSE 2026) showed that 29.6% of plausible agent patches behave differently from developer fixes under differential testing. To explore whether these suspect patches can be flagged at generation time without relying on developer reference oracles, I built a pilot framework evaluating static scope and syntactic contract checks across 724 agent patches from OpenHands, LearnByInteract, and CodeStory.
 

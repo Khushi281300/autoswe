@@ -1,5 +1,5 @@
 {
-    "timing_ms_per_patch": 10.93,
+    "timing_ms_per_patch": 10.38,
     "rules": {
         "r_scratch": {
             "label": "Scratch File Leaked",
@@ -7,26 +7,21 @@
             "tp": 70,
             "fp": 131,
             "recall": 0.2692,
+            "recall_95ci": [
+                0.219,
+                0.3262
+            ],
+            "fpr": 0.2823,
+            "fpr_95ci": [
+                0.2433,
+                0.3249
+            ],
             "precision": 0.3483,
-            "fpr": 0.2823
-        },
-        "r_test_tamper": {
-            "label": "Test File Tampered",
-            "total_flagged": 137,
-            "tp": 54,
-            "fp": 83,
-            "recall": 0.2077,
-            "precision": 0.3942,
-            "fpr": 0.1789
-        },
-        "r_non_code": {
-            "label": "Non-Code File Modified",
-            "total_flagged": 60,
-            "tp": 17,
-            "fp": 43,
-            "recall": 0.0654,
-            "precision": 0.2833,
-            "fpr": 0.0927
+            "precision_95ci": [
+                0.2858,
+                0.4164
+            ],
+            "assessment": "At chance level (uninformative)"
         },
         "r_out_of_scope": {
             "label": "Out-of-Scope File Modified",
@@ -34,8 +29,65 @@
             "tp": 79,
             "fp": 150,
             "recall": 0.3038,
+            "recall_95ci": [
+                0.2511,
+                0.3623
+            ],
+            "fpr": 0.3233,
+            "fpr_95ci": [
+                0.2823,
+                0.3671
+            ],
             "precision": 0.345,
-            "fpr": 0.3233
+            "precision_95ci": [
+                0.2864,
+                0.4086
+            ],
+            "assessment": "At chance level (uninformative)"
+        },
+        "r_test_tamper": {
+            "label": "Test File Tampered",
+            "total_flagged": 137,
+            "tp": 54,
+            "fp": 83,
+            "recall": 0.2077,
+            "recall_95ci": [
+                0.1628,
+                0.2611
+            ],
+            "fpr": 0.1789,
+            "fpr_95ci": [
+                0.1467,
+                0.2163
+            ],
+            "precision": 0.3942,
+            "precision_95ci": [
+                0.3163,
+                0.4778
+            ],
+            "assessment": "At chance level (uninformative)"
+        },
+        "r_non_code": {
+            "label": "Non-Code File Modified",
+            "total_flagged": 60,
+            "tp": 17,
+            "fp": 43,
+            "recall": 0.0654,
+            "recall_95ci": [
+                0.0412,
+                0.1022
+            ],
+            "fpr": 0.0927,
+            "fpr_95ci": [
+                0.0695,
+                0.1225
+            ],
+            "precision": 0.2833,
+            "precision_95ci": [
+                0.1851,
+                0.4077
+            ],
+            "assessment": "Weak signal"
         },
         "r_files": {
             "label": "Excessive Files (>4)",
@@ -43,8 +95,21 @@
             "tp": 9,
             "fp": 26,
             "recall": 0.0346,
+            "recall_95ci": [
+                0.0183,
+                0.0645
+            ],
+            "fpr": 0.056,
+            "fpr_95ci": [
+                0.0385,
+                0.0808
+            ],
             "precision": 0.2571,
-            "fpr": 0.056
+            "precision_95ci": [
+                0.1416,
+                0.4207
+            ],
+            "assessment": "Weak signal"
         },
         "r_churn": {
             "label": "Excessive Churn (>250)",
@@ -52,26 +117,21 @@
             "tp": 3,
             "fp": 10,
             "recall": 0.0115,
+            "recall_95ci": [
+                0.0039,
+                0.0334
+            ],
+            "fpr": 0.0216,
+            "fpr_95ci": [
+                0.0117,
+                0.0392
+            ],
             "precision": 0.2308,
-            "fpr": 0.0216
-        },
-        "r_except": {
-            "label": "Exception Suppressed",
-            "total_flagged": 0,
-            "tp": 0,
-            "fp": 0,
-            "recall": 0.0,
-            "precision": 0.0,
-            "fpr": 0.0
-        },
-        "r_hardcode": {
-            "label": "Hardcoded Return Cheat",
-            "total_flagged": 1,
-            "tp": 0,
-            "fp": 1,
-            "recall": 0.0,
-            "precision": 0.0,
-            "fpr": 0.0022
+            "precision_95ci": [
+                0.0818,
+                0.5026
+            ],
+            "assessment": "Rarely triggered, inconclusive"
         },
         "r_sig": {
             "label": "Public Signature Mutation",
@@ -79,8 +139,21 @@
             "tp": 5,
             "fp": 5,
             "recall": 0.0192,
+            "recall_95ci": [
+                0.0082,
+                0.0442
+            ],
+            "fpr": 0.0108,
+            "fpr_95ci": [
+                0.0046,
+                0.025
+            ],
             "precision": 0.5,
-            "fpr": 0.0108
+            "precision_95ci": [
+                0.2366,
+                0.7634
+            ],
+            "assessment": "Rarely triggered, inconclusive"
         },
         "r_guard": {
             "label": "Validation Guard Removed",
@@ -88,8 +161,87 @@
             "tp": 4,
             "fp": 4,
             "recall": 0.0154,
+            "recall_95ci": [
+                0.006,
+                0.0389
+            ],
+            "fpr": 0.0086,
+            "fpr_95ci": [
+                0.0034,
+                0.022
+            ],
             "precision": 0.5,
-            "fpr": 0.0086
+            "precision_95ci": [
+                0.2152,
+                0.7848
+            ],
+            "assessment": "Rarely triggered, inconclusive"
+        },
+        "r_hardcode": {
+            "label": "Hardcoded Return Cheat",
+            "total_flagged": 1,
+            "tp": 0,
+            "fp": 1,
+            "recall": 0.0,
+            "recall_95ci": [
+                0.0,
+                0.0146
+            ],
+            "fpr": 0.0022,
+            "fpr_95ci": [
+                0.0004,
+                0.0121
+            ],
+            "precision": 0.0,
+            "precision_95ci": [
+                0.0,
+                0.7935
+            ],
+            "assessment": "Rarely triggered, inconclusive"
+        },
+        "r_empty": {
+            "label": "Empty Patch",
+            "total_flagged": 1,
+            "tp": 0,
+            "fp": 1,
+            "recall": 0.0,
+            "recall_95ci": [
+                0.0,
+                0.0146
+            ],
+            "fpr": 0.0022,
+            "fpr_95ci": [
+                0.0004,
+                0.0121
+            ],
+            "precision": 0.0,
+            "precision_95ci": [
+                0.0,
+                0.7935
+            ],
+            "assessment": "Rarely triggered, inconclusive"
+        },
+        "r_except": {
+            "label": "Exception Suppressed",
+            "total_flagged": 0,
+            "tp": 0,
+            "fp": 0,
+            "recall": 0.0,
+            "recall_95ci": [
+                0.0,
+                0.0146
+            ],
+            "fpr": 0.0,
+            "fpr_95ci": [
+                0.0,
+                0.0082
+            ],
+            "precision": 0.0,
+            "precision_95ci": [
+                0.0,
+                0.0
+            ],
+            "assessment": "Never triggered"
         }
     }
 }

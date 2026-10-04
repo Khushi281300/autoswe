@@ -30,7 +30,8 @@ Existing differential testing techniques (such as PatchDiff) differentiate candi
 | **REFINE** (Wang et al., 2024) | Iterative patch refinement driven by failing test execution feedback. | Can overfit iteratively to the specific test cases used for feedback. | I explore multi-dimensional constraints (AST scope, contract invariance) independent of the test harness. |
 | **PAFT** (Jiang et al., 2024) | Patch-aware fine-tuning of LLMs on commit diffs. | Improves syntactic diff structure but cannot guarantee runtime behavioral equivalence. | I evaluate post-hoc verification applicable to any black-box agent. |
 | **SpecRover / SWE-ABS** | Synthesizes abstract behavioral specifications prior to patch authoring. | High LLM API cost and prompt latency for full formal specification recovery. | I focus on cheap, deterministic static rules (structural bounds, contract preservation) before invoking heavy test generation. |
-| **Search-Based APR & Overfitting** (e.g., Zhao et al., GECCO 2024) | Explores patch space search and overfitting reduction in automated program repair. | Primarily evaluated on classic benchmarks (Defects4J); needs translation to repo-level LLM agents. | Connects foundational APR overfitting insights to LLM agent outputs on SWE-bench Verified. |
+| **Repair of NN Controllers with System Specs** (e.g., Zhao et al., GECCO 2024) | Repairs neural network controllers for cyber-physical systems guided by system-level specifications. | Targets continuous control domains and neural policies; not general software source code. | I draw inspiration from specification-guided repair to explore how structural and contract specifications can constrain LLM code generation. |
+
 
 ---
 
@@ -63,9 +64,10 @@ My proposed research addresses the limitations revealed by the pilot study throu
 
 ### 5. Alignment with Prof. Jianjun Zhao's Laboratory
 
-Prof. Jianjun Zhao's laboratory at Kyushu University has conducted rigorous research in software analysis, program repair, and patch evaluation (such as recent work on patch search spaces in GECCO 2024). 
+Prof. Jianjun Zhao's laboratory at Kyushu University has conducted rigorous research in software analysis, program repair, and specification-guided controller repair (such as recent work on repairing neural network controllers under system-level specifications in GECCO 2024).
 
-My goal is to bring empirical discipline to the evaluation of LLM coding agents by bridging modern LLM benchmarks with classical program repair insights. Working under Prof. Zhao's mentorship will provide the rigorous academic foundation needed to develop sound, verifiable techniques for autonomous software engineering.
+My goal is to bring empirical discipline to the evaluation of LLM coding agents by bridging modern LLM benchmarks with classical program analysis and specification-driven validation. Working under Prof. Zhao's mentorship will provide the rigorous academic foundation needed to develop sound, verifiable techniques for autonomous software engineering.
+
 
 ---
 

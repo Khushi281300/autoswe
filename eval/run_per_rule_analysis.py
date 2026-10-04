@@ -2,18 +2,20 @@
 eval/run_per_rule_analysis.py
 
 Performs granular, rule-by-rule ablation across all 724 patches.
-Measures execution timing, per-tool breakdown, precision, recall, and false alarm rate
-for each rule individually against the divergent (positive) vs non-divergent (negative) set.
+Computes 95% Wilson score confidence intervals for Precision, Recall, and False Alarm Rate (FPR).
+Categorizes rules rigorously, including rarely-triggered rules.
 """
 
 import sys
 import os
 import time
 import json
+import math
+from typing import Tuple
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from eval.evaluator import GateEvaluator
+from eval.evaluator import GateEvaluator, wilson_score_interval
 
 evaluator = GateEvaluator()
 evaluator.load_datasets()
@@ -41,6 +43,7 @@ for tool, rq2_data in evaluator.rq2_records.items():
         
         reasons_s = s_res.rejection_reasons
         reasons_b = b_res.rejection_reasons
+        all_reasons = reasons_s + reasons_b  # Fixed bug: concatenated lists
         
         r_scratch = any('reproduce' in r.lower() or 'test_edge_cases' in r.lower() for r in reasons_s)
         r_test_tamper = any('TEST_FILE_TAMPERING' in r for r in reasons_s)
@@ -49,10 +52,11 @@ for tool, rq2_data in evaluator.rq2_records.items():
         r_files = any('EXCESSIVE_FILES_MODIFIED' in r for r in reasons_s)
         r_churn = any('EXCESSIVE_CHURN' in r for r in reasons_s)
         
-        r_except = any('EXCEPTION_SUPPRESSION' in r for r in reasons_b or reasons_s)
-        r_hardcode = any('HARDCODED_TEST_OVERFIT' in r for r in reasons_b)
-        r_sig = any('PUBLIC_API_MUTATION' in r for r in reasons_b)
-        r_guard = any('VALIDATION_GUARD_REMOVAL' in r for r in reasons_b)
+        r_empty = any('EMPTY_PATCH' in r for r in all_reasons)
+        r_except = any('EXCEPTION_SUPPRESSION' in r for r in all_reasons)
+        r_hardcode = any('HARDCODED_TEST_OVERFIT' in r for r in all_reasons)
+        r_sig = any('PUBLIC_API_MUTATION' in r for r in all_reasons)
+        r_guard = any('VALIDATION_GUARD_REMOVAL' in r for r in all_reasons)
         
         records.append({
             'tool': tool,
@@ -64,6 +68,7 @@ for tool, rq2_data in evaluator.rq2_records.items():
             'r_out_of_scope': r_out_of_scope,
             'r_files': r_files,
             'r_churn': r_churn,
+            'r_empty': r_empty,
             'r_except': r_except,
             'r_hardcode': r_hardcode,
             'r_sig': r_sig,
@@ -73,34 +78,31 @@ for tool, rq2_data in evaluator.rq2_records.items():
 total_time = time.perf_counter() - t0
 avg_time_ms = (total_time / len(records)) * 1000
 
-print(f"Timing: Evaluated {len(records)} patches in {total_time:.3f}s -> {avg_time_ms:.2f} ms per patch")
-
 rdf = pd.DataFrame(records)
 pos_mask = rdf['has_diff_test'] == True
 neg_mask = rdf['has_diff_test'] == False
-total_pos = pos_mask.sum()
-total_neg = neg_mask.sum()
-
-print(f"\nTotal Patches: {len(rdf)} (Divergent: {total_pos}, Non-Divergent: {total_neg})")
-print("Per-tool breakdown of all patches:", rdf['tool'].value_counts().to_dict())
-print("Per-tool breakdown of divergent patches:", rdf[pos_mask]['tool'].value_counts().to_dict())
-print("Per-tool breakdown of scratch file leaks:", rdf[rdf['r_scratch'] == True]['tool'].value_counts().to_dict())
+total_pos = int(pos_mask.sum())
+total_neg = int(neg_mask.sum())
 
 rule_names = [
     ('r_scratch', 'Scratch File Leaked'),
+    ('r_out_of_scope', 'Out-of-Scope File Modified'),
     ('r_test_tamper', 'Test File Tampered'),
     ('r_non_code', 'Non-Code File Modified'),
-    ('r_out_of_scope', 'Out-of-Scope File Modified'),
     ('r_files', 'Excessive Files (>4)'),
     ('r_churn', 'Excessive Churn (>250)'),
-    ('r_except', 'Exception Suppressed'),
-    ('r_hardcode', 'Hardcoded Return Cheat'),
     ('r_sig', 'Public Signature Mutation'),
     ('r_guard', 'Validation Guard Removed'),
+    ('r_hardcode', 'Hardcoded Return Cheat'),
+    ('r_empty', 'Empty Patch'),
+    ('r_except', 'Exception Suppressed'),
 ]
 
-header = f"{'Rule Name':<28s} | {'Total Flagged':<13s} | {'Divergent (TP)':<16s} | {'Non-Div (FP)':<14s} | {'Precision':<10s} | {'FPR':<6s}"
-print("\n" + "=" * len(header))
+header = f"{'Rule Name':<28s} | {'Total':<6s} | {'Divergent (TP)':<10s} | {'Recall [95% CI]':<20s} | {'Non-Div (FP)':<12s} | {'FPR [95% CI]':<20s} | {'Precision [95% CI]':<22s} | {'Assessment'}"
+print("=" * len(header))
+print(f"GRANULAR PER-RULE ABLATION (N=724, Positives={total_pos}, Negatives={total_neg})")
+print(f"Timing: {total_time:.3f}s total ({avg_time_ms:.2f} ms/patch)")
+print("=" * len(header))
 print(header)
 print("-" * len(header))
 
@@ -110,21 +112,46 @@ for col, label in rule_names:
     tp = int((flagged & pos_mask).sum())
     fp = int((flagged & neg_mask).sum())
     tot = int(flagged.sum())
-    prec = tp / tot if tot > 0 else 0.0
-    fpr = fp / total_neg if total_neg > 0 else 0.0
+    
     rec = tp / total_pos if total_pos > 0 else 0.0
+    rec_ci = wilson_score_interval(tp, total_pos)
+    
+    fpr = fp / total_neg if total_neg > 0 else 0.0
+    fpr_ci = wilson_score_interval(fp, total_neg)
+    
+    prec = tp / tot if tot > 0 else 0.0
+    prec_ci = wilson_score_interval(tp, tot) if tot > 0 else (0.0, 0.0)
+
+    if tot == 0:
+        assessment = "Never triggered"
+    elif tot < 20:
+        assessment = "Rarely triggered, inconclusive"
+    elif abs(prec - (total_pos / len(rdf))) < 0.05:
+        assessment = "At chance level (uninformative)"
+    else:
+        assessment = "Weak signal"
+
     rule_summary[col] = {
         'label': label,
         'total_flagged': tot,
         'tp': tp,
         'fp': fp,
         'recall': round(rec, 4),
+        'recall_95ci': rec_ci,
+        'fpr': round(fpr, 4),
+        'fpr_95ci': fpr_ci,
         'precision': round(prec, 4),
-        'fpr': round(fpr, 4)
+        'precision_95ci': prec_ci,
+        'assessment': assessment,
     }
-    print(f"{label:<28s} | {tot:<13d} | {tp}/{total_pos:<4d} ({rec*100:4.1f}%) | {fp}/{total_neg:<4d} ({fpr*100:4.1f}%) | {prec*100:5.1f}%     | {fpr*100:4.1f}%")
+    
+    rec_str = f"{rec*100:4.1f}% [{rec_ci[0]*100:4.1f}%,{rec_ci[1]*100:4.1f}%]"
+    fpr_str = f"{fpr*100:4.1f}% [{fpr_ci[0]*100:4.1f}%,{fpr_ci[1]*100:4.1f}%]"
+    prec_str = f"{prec*100:4.1f}% [{prec_ci[0]*100:4.1f}%,{prec_ci[1]*100:4.1f}%]" if tot > 0 else "N/A"
+    
+    print(f"{label:<28s} | {tot:<6d} | {tp:<10d} | {rec_str:<20s} | {fp:<12d} | {fpr_str:<20s} | {prec_str:<22s} | {assessment}")
+
 print("=" * len(header))
 
-# Save summary json
 with open('eval/per_rule_summary.json', 'w') as f:
     json.dump({'timing_ms_per_patch': round(avg_time_ms, 2), 'rules': rule_summary}, f, indent=4)
