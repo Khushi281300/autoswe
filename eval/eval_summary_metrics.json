@@ -1,0 +1,28 @@
+{
+    "total_evaluated_instances": 77,
+    "confirmed_incorrect_count": 22,
+    "confirmed_correct_count": 4,
+    "divergent_count": 52,
+    "gate_true_positives": 11,
+    "gate_false_negatives": 11,
+    "gate_false_positives": 1,
+    "gate_true_negatives": 3,
+    "gate_recall": 0.5,
+    "gate_recall_95ci": [
+        0.3072,
+        0.6928
+    ],
+    "gate_false_alarm_rate": 0.25,
+    "gate_fpr_95ci": [
+        0.0456,
+        0.6994
+    ],
+    "gate_precision": 0.9167,
+    "gate_precision_95ci": [
+        0.6461,
+        0.9851
+    ],
+    "divergence_detection_rate": 0.5577,
+    "baseline_churn_recall": 0.0909,
+    "baseline_rq1_devtest_recall": 0.5
+}
