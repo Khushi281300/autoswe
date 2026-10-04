@@ -3,25 +3,25 @@ Subject: Prospective Research Student / Graduate Application Inquiry - Automated
 
 Dear Professor Zhao,
 
-I hope this email finds you in good health.
+I hope this email finds you well.
 
-My name is Khushi Shukla, and I am writing to express my strong interest in joining your Software Engineering Laboratory as a research student (Kenkyusei) / Master's student at Kyushu University for the upcoming academic cycle.
+My name is Khushi Shukla, and I am writing to express my strong interest in applying as a research student (Kenkyusei) / Master's degree student in your Software Engineering Laboratory at Kyushu University for the upcoming admissions cycle.
 
-I have followed your laboratory’s distinguished contributions to program analysis, automated program repair (APR), and software testing with great admiration (particularly your work on patch search spaces and repair reliability). My current research focuses on automated program repair in autonomous software engineering agents, specifically addressing the widespread challenge of **test overfitting on SWE-bench Verified**.
+I have followed your research on automated program repair and search space analysis with great interest, particularly your GECCO 2024 paper on exploring patch spaces for program repair. My current research focuses on automated program repair in autonomous software engineering agents, specifically investigating whether oracle-free static checks can mitigate test overfitting and behavioral divergence on SWE-bench Verified.
 
-While modern LLM agents (such as OpenHands and CodeStory) achieve high resolution scores, their generated patches frequently overfit to sparse test suites by swallowing exceptions, mutating public APIs, or altering unrelated files. To address this without relying on developer reference patches (oracles), I have developed and evaluated a lightweight, oracle-free verification gate combining AST scope analysis and behavioral contract invariance.
+Recent work by Wang, Pradel, and Liu (ICSE 2026) showed that 29.6% of plausible agent patches behave differently from developer fixes under differential testing. To explore whether these suspect patches can be flagged at generation time without relying on developer reference oracles, I built a pilot framework evaluating static scope and syntactic contract checks across 724 agent patches from OpenHands, LearnByInteract, and CodeStory.
 
-In our preliminary pilot study evaluated across 724 candidate agent patches on SWE-bench Verified:
-1. Our oracle-free gate successfully detected **50.0% of human-confirmed overfitted/incorrect fixes** with **91.67% precision**—outperforming standard patch-size heuristics by 5.5x, with an execution latency under 0.15s per patch.
-2. We uncovered an empirical phenomenon where over **150 patches** from state-of-the-art tools inadvertently leak temporary scratch reproduction scripts (`reproduce_error.py`) into their final diffs, highlighting a widespread need for automated patch sanitization.
+Our pilot experiments revealed an important empirical finding:
+- Naive static checks flagged 47.3% of divergent patches and 50.0% of non-divergent patches, performing close to chance level (precision 34.6% vs. 35.9% base rate), driven largely by high false alarms in broad file-mention rules. In contrast, existing developer regression tests achieved 63.5% precision at a 7.5% false alarm rate.
+- However, specific syntactic rules (such as public signature mutation and validation guard removal) demonstrated high specificity (~1.0% false alarm rate), and we observed a widespread commit-hygiene phenomenon where 27.8% of agent patches inadvertently commit scratch reproduction scripts into root directories.
 
-I have attached my **CV** and a **Research Proposal** titled *"Mitigating Test Overfitting in Autonomous Software Engineering Agents via Oracle-Free Verification Gates"* for your kind consideration.
+These findings show that pure static rules cannot serve as a stand-alone rejection gate, and motivate my proposed Master's research: studying which oracle-free signals carry genuine predictive power and designing hybrid static-dynamic verification to reliably guide agent repair loops.
 
-I would be deeply honored to pursue my graduate research under your guidance, combining your laboratory’s rigorous foundation in software engineering and program analysis with autonomous LLM repair systems.
+I have attached my CV and a research proposal titled "Oracle-Free Static Checks for Detecting Suspect Patches in LLM Issue-Resolving Agents: A Pilot Study" for your kind review.
 
-Could you kindly advise if you are accepting international research students or Master’s applicants for the 2027 academic year? I would welcome the opportunity to discuss my research and how my background aligns with your laboratory's current directions.
+Could you kindly advise if you are open to accepting international research students or Master’s applicants for the 2027 academic year? I would welcome any feedback on my research direction.
 
-Thank you very much for your time, consideration, and leadership in software engineering research.
+Thank you very much for your time and consideration.
 
 Sincerely,
 
