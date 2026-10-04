@@ -1,0 +1,31 @@
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Temporary files and logs
+temp/
+logs/
+runall_cache/
+diff_swe_tests/
+zenodo/*.7z
+PatchDiff/logs/
+PatchDiff/temp/
+PatchDiff/runall_cache/
+PatchDiff/diff_swe_tests/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
