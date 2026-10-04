@@ -15,16 +15,16 @@ __pycache__/
 .env.*
 !.env.example
 
+# External repositories and large benchmarks
+PatchDiff/
+SWE-bench/
+
 # Temporary files and logs
 temp/
 logs/
 runall_cache/
 diff_swe_tests/
 zenodo/*.7z
-PatchDiff/logs/
-PatchDiff/temp/
-PatchDiff/runall_cache/
-PatchDiff/diff_swe_tests/
 
 # OS artifacts
 .DS_Store
