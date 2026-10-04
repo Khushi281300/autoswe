@@ -4,7 +4,13 @@ eval/evaluator.py
 Offline evaluation harness for oracle-free APR verification gates.
 Evaluates gate precision, recall, and false-alarm rates against:
 1. The 77 manually verified instances in RQ34.csv.
-2. The full RQ2 differential testing benchmark across 200+ instances per tool.
+2. The full RQ2 differential testing benchmark across 724 instances.
+Compares:
+- ScopeChecker alone
+- BehaviorChecker alone
+- CompositeVerificationGate (Raw)
+- CompositeVerificationGate (Sanitized)
+- Baselines (Size Churn > 100, Developer-test Regression)
 """
 
 import os
@@ -20,6 +26,8 @@ if WORKSPACE_ROOT not in sys.path:
     sys.path.insert(0, WORKSPACE_ROOT)
 
 from gates.scope_checker import ScopeChecker
+from gates.behavior_checker import BehaviorChecker
+from gates.composite_gate import CompositeVerificationGate
 
 
 def wilson_score_interval(successes: int, total: int, confidence: float = 0.95) -> Tuple[float, float]:
@@ -49,6 +57,10 @@ class GateEvaluator:
         }
         
         self.scope_checker = ScopeChecker()
+        self.behavior_checker = BehaviorChecker()
+        self.composite_raw = CompositeVerificationGate(auto_sanitize_scratch_files=False)
+        self.composite_sanitized = CompositeVerificationGate(auto_sanitize_scratch_files=True)
+
         self.ds = None
         self.ds_dict = {}
         self.rq34_df = None
@@ -57,14 +69,13 @@ class GateEvaluator:
 
     def load_datasets(self):
         """Loads SWE-bench verified, RQ34 labels, RQ1 failure records, and RQ2 diff tests."""
-        print(f"Loading SWE-bench Verified dataset...")
+        print("Loading SWE-bench Verified dataset...")
         self.ds = load_from_disk(self.verified_ds_path)
         self.ds_dict = {item["instance_id"]: item for item in self.ds}
 
         rq34_file = os.path.join(self.results_dir, "RQ34.csv")
         self.rq34_df = pd.read_csv(rq34_file)
 
-        # Load RQ1 developer-test failure records & RQ2 differential tests
         for tool in self.tools:
             rq1_file = os.path.join(self.results_dir, f"RQ1_{tool}_runall.json")
             if os.path.exists(rq1_file):
@@ -104,18 +115,13 @@ class GateEvaluator:
         return patches
 
     def evaluate_extended(self) -> pd.DataFrame:
-        """
-        Evaluates the gate on both:
-        1. Confirmed manual instances (RQ34).
-        2. All RQ2 evaluated instances (divergent vs non-divergent negative set).
-        """
+        """Evaluates all gates across the benchmark."""
         if not self.ds_dict:
             self.load_datasets()
 
         records = []
         all_tool_patches = {tool: self.load_tool_patches(tool) for tool in self.tools}
 
-        # Build mapping of RQ34 labels: (tool, instance_id) -> row
         rq34_map = {}
         for _, row in self.rq34_df.iterrows():
             rq34_map[(row["tool"], row["instance_id"])] = row
@@ -131,17 +137,23 @@ class GateEvaluator:
                 problem_statement = instance_meta.get("problem_statement", "")
                 model_patch = patch_info["model_patch"]
 
-                # Run ScopeChecker gate
-                check_res = self.scope_checker.check(model_patch, problem_statement=problem_statement)
+                # 1. Scope Checker
+                scope_res = self.scope_checker.check(model_patch, problem_statement=problem_statement)
 
-                # Has differential test generated in RQ2?
+                # 2. Behavior Checker
+                behavior_res = self.behavior_checker.check(model_patch)
+
+                # 3. Composite Raw (rejects scratch files)
+                comp_raw_res = self.composite_raw.evaluate(model_patch, problem_statement=problem_statement)
+
+                # 4. Composite Sanitized (prunes scratch files before checking)
+                comp_san_res = self.composite_sanitized.evaluate(model_patch, problem_statement=problem_statement)
+
+                # Ground Truth info
                 has_diff_test = any(len(item.get("differential_tests", [])) > 0 for item in test_attempts)
-
-                # Check RQ1 developer-test failure
                 rq1_data = self.rq1_records.get(tool, {}).get(iid, {})
                 rq1_has_regression = len(rq1_data.get("oracle_pass_model_fail", [])) > 0
 
-                # Check RQ34 manual label if present
                 manual_label = rq34_map.get((tool, iid))
                 diff_pattern = manual_label["diff_pattern"] if manual_label is not None else ("divergent" if has_diff_test else "non_divergent")
                 correctness = manual_label["correctness"] if manual_label is not None else ("unlabeled_divergent" if has_diff_test else "likely_correct_nondivergent")
@@ -154,33 +166,31 @@ class GateEvaluator:
                     "has_diff_test": has_diff_test,
                     "in_rq34_manual_set": manual_label is not None,
                     "is_resolved_in_bench": patch_info["is_resolved"],
-                    # Gate Decision
-                    "gate_passed": check_res.is_valid,
-                    "gate_flagged": not check_res.is_valid,
-                    "rejection_reasons": "|".join(check_res.rejection_reasons),
-                    # Metrics
-                    "num_files": check_res.metrics.num_files_modified,
-                    "total_churn": check_res.metrics.total_churn,
-                    "test_file_tampering": len(check_res.metrics.modified_test_files) > 0,
-                    "non_code_files": len(check_res.metrics.modified_non_code_files) > 0,
-                    "unrelated_files": len(check_res.metrics.files_unrelated_to_issue) > 0,
-                    "exception_suppressed": check_res.metrics.broad_exception_swallows > 0,
+                    # Gate Decisions (Flagged = True means rejected as overfitted)
+                    "scope_flagged": not scope_res.is_valid,
+                    "behavior_flagged": not behavior_res.is_valid,
+                    "composite_raw_flagged": not comp_raw_res.is_valid,
+                    "composite_sanitized_flagged": not comp_san_res.is_valid,
+                    "pruned_scratch_count": len(comp_san_res.pruned_scratch_files),
+                    "reasons_scope": "|".join(scope_res.rejection_reasons),
+                    "reasons_behavior": "|".join(behavior_res.rejection_reasons),
+                    "reasons_composite_sanitized": "|".join(comp_san_res.rejection_reasons),
                     # Baselines
-                    "baseline_churn_flagged": check_res.metrics.total_churn > 100,
+                    "baseline_churn_flagged": scope_res.metrics.total_churn > 100,
                     "baseline_rq1_regression_flagged": rq1_has_regression,
                 })
 
         return pd.DataFrame(records)
 
     @staticmethod
-    def compute_metrics_for_slice(df: pd.DataFrame, positive_col: str, negative_col: str) -> Dict[str, Any]:
-        positives = df[df[positive_col] == True]
-        negatives = df[df[negative_col] == True]
+    def compute_metrics_for_slice(df: pd.DataFrame, flag_col: str, positive_mask: pd.Series, negative_mask: pd.Series) -> Dict[str, Any]:
+        positives = df[positive_mask]
+        negatives = df[negative_mask]
 
-        tp = len(positives[positives["gate_flagged"] == True])
-        fn = len(positives[positives["gate_passed"] == True])
-        fp = len(negatives[negatives["gate_flagged"] == True])
-        tn = len(negatives[negatives["gate_passed"] == True])
+        tp = int((positives[flag_col] == True).sum())
+        fn = int((positives[flag_col] == False).sum())
+        fp = int((negatives[flag_col] == True).sum())
+        tn = int((negatives[flag_col] == False).sum())
 
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
         fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
@@ -204,47 +214,59 @@ class GateEvaluator:
 
 def main():
     evaluator = GateEvaluator()
-    print("Executing comprehensive offline gate evaluation...")
+    print("Executing unified offline gate evaluation...")
     df = evaluator.evaluate_extended()
 
     output_dir = os.path.join(WORKSPACE_ROOT, "eval")
     os.makedirs(output_dir, exist_ok=True)
+    df.to_csv(os.path.join(output_dir, "extended_eval_results.csv"), index=False)
 
-    csv_path = os.path.join(output_dir, "extended_eval_results.csv")
-    df.to_csv(csv_path, index=False)
-    print(f"Saved {len(df)} instance evaluation records to {csv_path}")
+    # RQ34 slice (Confirmed incorrect vs confirmed correct)
+    rq34_mask = df["in_rq34_manual_set"] == True
+    rq34_pos = rq34_mask & df["correctness"].str.startswith("incorrect")
+    rq34_neg = rq34_mask & df["correctness"].str.startswith("correct")
 
-    # 1. Pilot subset: RQ34 confirmed instances
-    rq34_df = df[df["in_rq34_manual_set"] == True].copy()
-    rq34_df["is_pos"] = rq34_df["correctness"].str.startswith("incorrect")
-    rq34_df["is_neg"] = rq34_df["correctness"].str.startswith("correct")
-    pilot_metrics = evaluator.compute_metrics_for_slice(rq34_df, "is_pos", "is_neg")
+    # RQ2 slice (Divergent vs Non-Divergent)
+    rq2_pos = df["has_diff_test"] == True
+    rq2_neg = df["has_diff_test"] == False
 
-    # 2. Extended dataset: Divergent vs Non-Divergent (Negative Set)
-    df["is_divergent"] = df["has_diff_test"] == True
-    df["is_nondivergent"] = df["has_diff_test"] == False
-    extended_metrics = evaluator.compute_metrics_for_slice(df, "is_divergent", "is_nondivergent")
+    gates_to_test = [
+        ("scope_flagged", "ScopeChecker Alone"),
+        ("behavior_flagged", "BehaviorChecker Alone"),
+        ("composite_raw_flagged", "Composite Gate (Raw)"),
+        ("composite_sanitized_flagged", "Composite Gate (Sanitized)"),
+        ("baseline_churn_flagged", "Baseline: Churn > 100"),
+        ("baseline_rq1_regression_flagged", "Baseline: RQ1 Regression"),
+    ]
 
-    # Save summary
-    summary_report = {
-        "pilot_rq34_manual_metrics": pilot_metrics,
-        "extended_rq2_benchmark_metrics": extended_metrics,
-    }
-    with open(os.path.join(output_dir, "extended_summary_metrics.json"), "w", encoding="utf-8") as f:
-        json.dump(summary_report, f, indent=4)
+    print("\n" + "="*85)
+    print("PILOT RQ34 CONFIRMED INSTANCES EVALUATION (N=77)")
+    print("="*85)
+    print(f"{'Gate / Baseline':<32s} | {'TP/Pos':<8s} | {'Recall':<8s} | {'FP/Neg':<8s} | {'FPR':<8s} | {'Precision':<8s}")
+    print("-" * 85)
 
-    print("\n" + "="*65)
-    print("PILOT RQ34 CONFIRMED INSTANCES (N=77)")
-    print("="*65)
-    for k, v in pilot_metrics.items():
-        print(f"  {k:24s}: {v}")
+    summary_rq34 = {}
+    for col, name in gates_to_test:
+        m = evaluator.compute_metrics_for_slice(df, col, rq34_pos, rq34_neg)
+        summary_rq34[name] = m
+        print(f"{name:<32s} | {m['true_positives']}/{m['total_positives']:<5d} | {m['recall']*100:5.1f}%  | {m['false_positives']}/{m['total_negatives']:<5d} | {m['false_alarm_rate']*100:5.1f}% | {m['precision']*100:5.1f}%")
 
-    print("\n" + "="*65)
-    print("EXTENDED BENCHMARK: DIVERGENT VS NON-DIVERGENT (N={})".format(len(df)))
-    print("="*65)
-    for k, v in extended_metrics.items():
-        print(f"  {k:24s}: {v}")
-    print("="*65)
+    print("\n" + "="*85)
+    print("EXTENDED BENCHMARK: DIVERGENT VS NON-DIVERGENT (N=724)")
+    print("="*85)
+    print(f"{'Gate / Baseline':<32s} | {'TP/Pos':<8s} | {'Recall':<8s} | {'FP/Neg':<8s} | {'FPR':<8s} | {'Precision':<8s}")
+    print("-" * 85)
+
+    summary_rq2 = {}
+    for col, name in gates_to_test:
+        m = evaluator.compute_metrics_for_slice(df, col, rq2_pos, rq2_neg)
+        summary_rq2[name] = m
+        print(f"{name:<32s} | {m['true_positives']}/{m['total_positives']:<5d} | {m['recall']*100:5.1f}%  | {m['false_positives']}/{m['total_negatives']:<5d} | {m['false_alarm_rate']*100:5.1f}% | {m['precision']*100:5.1f}%")
+    print("=" * 85)
+
+    with open(os.path.join(output_dir, "unified_summary_metrics.json"), "w", encoding="utf-8") as f:
+        json.dump({"rq34_pilot": summary_rq34, "rq2_extended": summary_rq2}, f, indent=4)
+    print(f"\nSaved unified summary metrics to {os.path.join(output_dir, 'unified_summary_metrics.json')}")
 
 
 if __name__ == "__main__":

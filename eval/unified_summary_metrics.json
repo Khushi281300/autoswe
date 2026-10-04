@@ -1,0 +1,282 @@
+{
+    "rq34_pilot": {
+        "ScopeChecker Alone": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 11,
+            "false_negatives": 11,
+            "false_positives": 1,
+            "true_negatives": 3,
+            "recall": 0.5,
+            "recall_95ci": [
+                0.3072,
+                0.6928
+            ],
+            "false_alarm_rate": 0.25,
+            "fpr_95ci": [
+                0.0456,
+                0.6994
+            ],
+            "precision": 0.9167,
+            "precision_95ci": [
+                0.6461,
+                0.9851
+            ]
+        },
+        "BehaviorChecker Alone": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 0,
+            "false_negatives": 22,
+            "false_positives": 0,
+            "true_negatives": 4,
+            "recall": 0.0,
+            "recall_95ci": [
+                0.0,
+                0.1487
+            ],
+            "false_alarm_rate": 0.0,
+            "fpr_95ci": [
+                0.0,
+                0.4899
+            ],
+            "precision": 0.0,
+            "precision_95ci": [
+                0.0,
+                0.0
+            ]
+        },
+        "Composite Gate (Raw)": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 11,
+            "false_negatives": 11,
+            "false_positives": 1,
+            "true_negatives": 3,
+            "recall": 0.5,
+            "recall_95ci": [
+                0.3072,
+                0.6928
+            ],
+            "false_alarm_rate": 0.25,
+            "fpr_95ci": [
+                0.0456,
+                0.6994
+            ],
+            "precision": 0.9167,
+            "precision_95ci": [
+                0.6461,
+                0.9851
+            ]
+        },
+        "Composite Gate (Sanitized)": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 8,
+            "false_negatives": 14,
+            "false_positives": 1,
+            "true_negatives": 3,
+            "recall": 0.3636,
+            "recall_95ci": [
+                0.1973,
+                0.5705
+            ],
+            "false_alarm_rate": 0.25,
+            "fpr_95ci": [
+                0.0456,
+                0.6994
+            ],
+            "precision": 0.8889,
+            "precision_95ci": [
+                0.565,
+                0.9801
+            ]
+        },
+        "Baseline: Churn > 100": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 2,
+            "false_negatives": 20,
+            "false_positives": 0,
+            "true_negatives": 4,
+            "recall": 0.0909,
+            "recall_95ci": [
+                0.0253,
+                0.2781
+            ],
+            "false_alarm_rate": 0.0,
+            "fpr_95ci": [
+                0.0,
+                0.4899
+            ],
+            "precision": 1.0,
+            "precision_95ci": [
+                0.3424,
+                1.0
+            ]
+        },
+        "Baseline: RQ1 Regression": {
+            "total_positives": 22,
+            "total_negatives": 4,
+            "true_positives": 11,
+            "false_negatives": 11,
+            "false_positives": 0,
+            "true_negatives": 4,
+            "recall": 0.5,
+            "recall_95ci": [
+                0.3072,
+                0.6928
+            ],
+            "false_alarm_rate": 0.0,
+            "fpr_95ci": [
+                0.0,
+                0.4899
+            ],
+            "precision": 1.0,
+            "precision_95ci": [
+                0.7412,
+                1.0
+            ]
+        }
+    },
+    "rq2_extended": {
+        "ScopeChecker Alone": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 117,
+            "false_negatives": 143,
+            "false_positives": 225,
+            "true_negatives": 239,
+            "recall": 0.45,
+            "recall_95ci": [
+                0.3907,
+                0.5108
+            ],
+            "false_alarm_rate": 0.4849,
+            "fpr_95ci": [
+                0.4398,
+                0.5303
+            ],
+            "precision": 0.3421,
+            "precision_95ci": [
+                0.2938,
+                0.3939
+            ]
+        },
+        "BehaviorChecker Alone": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 9,
+            "false_negatives": 251,
+            "false_positives": 11,
+            "true_negatives": 453,
+            "recall": 0.0346,
+            "recall_95ci": [
+                0.0183,
+                0.0645
+            ],
+            "false_alarm_rate": 0.0237,
+            "fpr_95ci": [
+                0.0133,
+                0.0419
+            ],
+            "precision": 0.45,
+            "precision_95ci": [
+                0.2582,
+                0.6579
+            ]
+        },
+        "Composite Gate (Raw)": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 123,
+            "false_negatives": 137,
+            "false_positives": 232,
+            "true_negatives": 232,
+            "recall": 0.4731,
+            "recall_95ci": [
+                0.4132,
+                0.5337
+            ],
+            "false_alarm_rate": 0.5,
+            "fpr_95ci": [
+                0.4547,
+                0.5453
+            ],
+            "precision": 0.3465,
+            "precision_95ci": [
+                0.2989,
+                0.3974
+            ]
+        },
+        "Composite Gate (Sanitized)": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 79,
+            "false_negatives": 181,
+            "false_positives": 150,
+            "true_negatives": 314,
+            "recall": 0.3038,
+            "recall_95ci": [
+                0.2511,
+                0.3623
+            ],
+            "false_alarm_rate": 0.3233,
+            "fpr_95ci": [
+                0.2823,
+                0.3671
+            ],
+            "precision": 0.345,
+            "precision_95ci": [
+                0.2864,
+                0.4086
+            ]
+        },
+        "Baseline: Churn > 100": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 21,
+            "false_negatives": 239,
+            "false_positives": 50,
+            "true_negatives": 414,
+            "recall": 0.0808,
+            "recall_95ci": [
+                0.0534,
+                0.1203
+            ],
+            "false_alarm_rate": 0.1078,
+            "fpr_95ci": [
+                0.0827,
+                0.1393
+            ],
+            "precision": 0.2958,
+            "precision_95ci": [
+                0.2023,
+                0.4102
+            ]
+        },
+        "Baseline: RQ1 Regression": {
+            "total_positives": 260,
+            "total_negatives": 464,
+            "true_positives": 61,
+            "false_negatives": 199,
+            "false_positives": 35,
+            "true_negatives": 429,
+            "recall": 0.2346,
+            "recall_95ci": [
+                0.1872,
+                0.2898
+            ],
+            "false_alarm_rate": 0.0754,
+            "fpr_95ci": [
+                0.0547,
+                0.1031
+            ],
+            "precision": 0.6354,
+            "precision_95ci": [
+                0.5357,
+                0.7248
+            ]
+        }
+    }
+}
